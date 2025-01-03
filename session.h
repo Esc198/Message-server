@@ -116,9 +116,9 @@ private:
                                 std::cout << "Destination: " << destination << std::endl;
 
                                 try {
-                                    pqxx::result messages = sql_interface.executeSelectQuery("SELECT * FROM messages WHERE (userTo = '"
-                                     + destination + "' AND userFrom = '" + user_name +"') OR (userFrom = '" + destination + 
-                                     "' AND userTo = '" + user_name + "');");
+                                    std::string query = "get_messages";
+                                    std::vector<std::string> params = {destination, user_name};
+                                    pqxx::result messages = sql_interface.executeQueryWithParams(query, params);
                                     int num_messages_to_send = std::min(num_messages, static_cast<int>(messages.size()));
                                     std::cout << "Number of messages to send: " << num_messages_to_send << std::endl;
 
@@ -180,8 +180,12 @@ private:
                                 std::string message(buffer->data() + dest_length, msg_length);
 
                                 try {
-                                    sql_interface.executeQuery("INSERT INTO messages (userFrom, userTo, message) VALUES ('" 
-                                        + user_name + "', '" + destination + "', '" + message + "');");
+                                   std::string query = "send_message";
+
+                                    std::vector<std::string> params = {user_name, destination, message};
+
+                                    sql_interface.executeQueryWithParams(query, params);
+
                                 } catch (const std::exception &e) {
                                     std::cerr << "Error inserting message: " << e.what() << std::endl;
                                 }
@@ -244,8 +248,10 @@ private:
                                 // Check the database for user authentication
                                 int auth_result = 1; // Default to failure
                                 try {
-                                    pqxx::result result = sql_interface.executeSelectQuery(
-                                        "SELECT * FROM users WHERE name = '" + username + "' AND password = '" + password + "';");
+                                    std::string query = "auth_user";
+                                    std::vector<std::string> params = {username, password};
+                                    pqxx::result result = sql_interface.executeQueryWithParams(query, params);
+
                                     if (!result.empty()) {
                                         auth_result = 0; // Success
                                         is_authenticated = true;
@@ -310,7 +316,9 @@ error code 1: unexpected length of data for lengths
                                         
                                         // Insert into the database
                                         try {
-                                            sql_interface.executeQuery("INSERT INTO users (name, password) VALUES ('" + username + "', '" + password + "');");
+                                            std::string query = "create_user";
+                                            std::vector<std::string> params = {username, password};
+                                            sql_interface.executeQueryWithParams(query, params);
                                         } catch (const std::exception &e) {
                                             std::cerr << "Error creating user: " << e.what() << std::endl;
                                             error_code = 2;
