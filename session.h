@@ -6,7 +6,6 @@
 #include "sql_interface.h"
 #include "./comandos.h"
 
-using boost::asio::ip::tcp;
 
 /*
 Formato de la comunicacion:
@@ -22,7 +21,7 @@ Formato de la comunicacion:
 
 class Session : public std::enable_shared_from_this<Session> {
 public:
-    Session(tcp::socket socket, SQL_Interface &common_sql_interface) 
+    Session( boost::asio::ip::tcp::socket socket, SQL_Interface &common_sql_interface) 
         : socket_(std::move(socket)), sql_interface(common_sql_interface), read_data_(1024) {}
 
     void start() {
@@ -34,7 +33,7 @@ public:
     }
 
 private:
-    tcp::socket socket_;
+    boost::asio::ip::tcp::socket socket_;
     std::string user_name;
     SQL_Interface &sql_interface;
     std::vector<char> read_data_;
