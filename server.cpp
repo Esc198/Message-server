@@ -11,7 +11,8 @@ void Server::async_listen_for_connections() {
     acceptor.async_accept(*socket,
         [this, socket](const boost::system::error_code &error) {
             if (!error) {
-                auto new_session = std::make_shared<Session>(std::move(*socket), sql_interface);
+               auto new_session = std::make_shared<Session>(std::move(*socket), sql_interface, 
+                    [this](std::shared_ptr<Session> session) { remove_session(session); });
                 sessions.push_back(new_session);
                 new_session->start();
                 std::cout << "New connection" << std::endl;
@@ -20,4 +21,9 @@ void Server::async_listen_for_connections() {
             }
             async_listen_for_connections();
         });
+}
+
+void Server::remove_session(std::shared_ptr<Session> session) {
+    sessions.erase(std::remove(sessions.begin(), sessions.end(), session), sessions.end());
+    std::cout << "Session removed" << std::endl;
 }

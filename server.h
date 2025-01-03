@@ -12,6 +12,7 @@ class Server {
 public:
     Server(boost::asio::io_context &io_context, int port, const std::string &connectionString);
     void async_listen_for_connections();
+    void remove_session(std::shared_ptr<Session> session);
 private:
     boost::asio::io_context &asio_context;
     boost::asio::ip::tcp::acceptor acceptor;
