@@ -94,8 +94,9 @@ private:
     6. Por cada mensaje:
         1. Enviar la longitud del nombre del remitente
         2. Enviar la longitud del mensaje
-        3. Enviar el nombre del remitente
-        4. Enviar el mensaje
+        3. Enviar la fecha del mensaje
+        4. Enviar el nombre del remitente
+        5. Enviar el mensaje
     */
     void async_get_messages(){
         std::shared_ptr<std::vector<int>> lengths = std::make_shared<std::vector<int>>(2);
@@ -137,6 +138,12 @@ private:
                                         // Send the lengths of the userFrom and message
                                         boost::asio::write(socket_, boost::asio::buffer(&userFrom_length, sizeof(int)));
                                         boost::asio::write(socket_, boost::asio::buffer(&message_length, sizeof(int)));
+
+                                        // Send the message time
+                                        std::string time = messages[i]["time"].as<std::string>();
+                                        int time_length = time.size();
+                                        boost::asio::write(socket_, boost::asio::buffer(&time_length, sizeof(int)));
+                                        boost::asio::write(socket_, boost::asio::buffer(time));
 
                                         // Send the userFrom and message
                                         boost::asio::write(socket_, boost::asio::buffer(userFrom));
@@ -182,7 +189,11 @@ private:
                                 try {
                                    std::string query = "send_message";
 
-                                    std::vector<std::string> params = {user_name, destination, message};
+                                    std::time_t t = std::time(nullptr);
+                                    std::tm* tm_ptr = std::localtime(&t);
+                                    char current_time[20];
+                                    std::strftime(current_time, sizeof(current_time), "%Y-%m-%d %H:%M:%S", tm_ptr);
+                                    std::vector<std::string> params = {current_time, user_name, destination, message};
 
                                     sql_interface.executeQueryWithParams(query, params);
 

@@ -80,6 +80,15 @@ void get_messages(boost::asio::ip::tcp::socket &socket, int count, const std::st
         boost::asio::read(socket, boost::asio::buffer(&userFrom_length, sizeof(int)));
         boost::asio::read(socket, boost::asio::buffer(&message_length, sizeof(int)));
 
+        std::string time;
+        int time_size;
+        boost::asio::read(socket, boost::asio::buffer(&time_size, sizeof(int)));
+        std::vector<char> time_buffer(time_size);
+        boost::asio::read(socket, boost::asio::buffer(time_buffer));
+        time = std::string(time_buffer.begin(), time_buffer.end());
+
+
+
         std::vector<char> userFrom_buffer(userFrom_length);
         boost::asio::read(socket, boost::asio::buffer(userFrom_buffer));
         std::string userFrom(userFrom_buffer.begin(), userFrom_buffer.end());
@@ -88,7 +97,7 @@ void get_messages(boost::asio::ip::tcp::socket &socket, int count, const std::st
         boost::asio::read(socket, boost::asio::buffer(message_buffer));
         std::string message(message_buffer.begin(), message_buffer.end());
 
-        std::cout << "Message from: " << userFrom << std::endl;
+        std::cout << "Message from: " << userFrom << "At: " << time <<std::endl;
         std::cout << "Message: " << message << std::endl;
     }
 }
